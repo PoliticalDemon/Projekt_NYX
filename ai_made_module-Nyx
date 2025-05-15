@@ -1,84 +1,32 @@
-#File_basic
-nyx/
-├── main.c
-├── neuron.h
-├── neuron.c
-├── utils.h
-├── utils.c
-└── Makefile
+import numpy as np
 
-#header_for_neuron_logic
-#ifndef NEURON_H
-#define NEURON_H
+class Neuron:
+    def __init__(self, input_size=3):
+        self.input_size = input_size
+        self.inputs = np.zeros(input_size)
+        self.weights = np.random.uniform(0, 1, input_size)
+        self.bias = 0.1
 
-#define INPUT_SIZE 3
+    def set_inputs(self, inputs):
+        if len(inputs) != self.input_size:
+            raise ValueError("Incorrect number of inputs")
+        self.inputs = np.array(inputs)
 
-typedef struct {
-    float inputs[INPUT_SIZE];
-    float weights[INPUT_SIZE];
-    float bias;
-} Neuron;
+    def tanh_activation(self, x):
+        return np.tanh(x)
 
-float tanh_activation(float x);
-float compute_output(Neuron *n);
+    def compute_output(self):
+        total = np.dot(self.inputs, self.weights) + self.bias
+        activated = self.tanh_activation(total)
+        # Convert [-1, 1] to [0, 100] probability
+        return round((activated + 1.0) * 50.0, 2)
 
-#endif
+if __name__ == "__main__":
+    nyx = Neuron()
 
-#coreyneron_logic
-#include <math.h>
-#include "neuron.h"
-
-float tanh_activation(float x) {
-    return tanhf(x);
-}
-
-float compute_output(Neuron *n) {
-    float sum = 0.0f;
-    for (int i = 0; i < INPUT_SIZE; ++i) {
-        sum += n->inputs[i] * n->weights[i];
-    }
-    sum += n->bias;
-    float activated = tanh_activation(sum);
-    // Map [-1, 1] to [0, 100]%
-    return (activated + 1.0f) * 50.0f;
-}
-
-#testing_neuron
-#include <stdio.h>
-#include "neuron.h"
-
-int main() {
-    Neuron nyx = {
-        .inputs = {0.6f, 0.3f, 0.5f},
-        .weights = {0.4f, 0.5f, 0.6f},
-        .bias = 0.1f
-    };
-
-    float probability = compute_output(&nyx);
-    printf("Predicted Conflict Probability: %.2f%%\n", probability);
-
-    return 0;
-}
-
-#makefile
-CC = gcc
-CFLAGS = -Wall -O2
-
-all: nyx
-
-nyx: main.o neuron.o
-	$(CC) -o nyx main.o neuron.o
-
-main.o: main.c neuron.h
-	$(CC) $(CFLAGS) -c main.c
-
-neuron.o: neuron.c neuron.h
-	$(CC) $(CFLAGS) -c neuron.c
-
-clean:
-	rm -f *.o nyx
-
-#bash
-cd nyx
-make
-./nyx
+    # Example: [Unrest, Gov Response, External Influence]
+    test_input = [0.6, 0.3, 0.5]
+    nyx.set_inputs(test_input)
+    
+    output = nyx.compute_output()
+    print(f"Predicted Conflict Probability: {output}%")
