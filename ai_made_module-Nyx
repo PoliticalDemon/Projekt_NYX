@@ -1,0 +1,84 @@
+#File_basic
+nyx/
+├── main.c
+├── neuron.h
+├── neuron.c
+├── utils.h
+├── utils.c
+└── Makefile
+
+#header_for_neuron_logic
+#ifndef NEURON_H
+#define NEURON_H
+
+#define INPUT_SIZE 3
+
+typedef struct {
+    float inputs[INPUT_SIZE];
+    float weights[INPUT_SIZE];
+    float bias;
+} Neuron;
+
+float tanh_activation(float x);
+float compute_output(Neuron *n);
+
+#endif
+
+#coreyneron_logic
+#include <math.h>
+#include "neuron.h"
+
+float tanh_activation(float x) {
+    return tanhf(x);
+}
+
+float compute_output(Neuron *n) {
+    float sum = 0.0f;
+    for (int i = 0; i < INPUT_SIZE; ++i) {
+        sum += n->inputs[i] * n->weights[i];
+    }
+    sum += n->bias;
+    float activated = tanh_activation(sum);
+    // Map [-1, 1] to [0, 100]%
+    return (activated + 1.0f) * 50.0f;
+}
+
+#testing_neuron
+#include <stdio.h>
+#include "neuron.h"
+
+int main() {
+    Neuron nyx = {
+        .inputs = {0.6f, 0.3f, 0.5f},
+        .weights = {0.4f, 0.5f, 0.6f},
+        .bias = 0.1f
+    };
+
+    float probability = compute_output(&nyx);
+    printf("Predicted Conflict Probability: %.2f%%\n", probability);
+
+    return 0;
+}
+
+#makefile
+CC = gcc
+CFLAGS = -Wall -O2
+
+all: nyx
+
+nyx: main.o neuron.o
+	$(CC) -o nyx main.o neuron.o
+
+main.o: main.c neuron.h
+	$(CC) $(CFLAGS) -c main.c
+
+neuron.o: neuron.c neuron.h
+	$(CC) $(CFLAGS) -c neuron.c
+
+clean:
+	rm -f *.o nyx
+
+#bash
+cd nyx
+make
+./nyx
